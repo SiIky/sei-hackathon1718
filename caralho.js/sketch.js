@@ -4,7 +4,7 @@ var numframe = 0, silencio = 0, sflag = 0;
 
 var maximaAmplitude = 17, intervaloFrames = 30;
 
-var avaliacao = 0.0; // 0-100
+var pontos = 0; // 0-100
 var numAvaliacoes = 0;
 
 function preload() {
@@ -24,11 +24,11 @@ function setup() {
 }
 
 function keyPressed(){
+    console.log("caralho");
     if(keyCode === 32){
         if((recState === 0 || recState === 2) && mic.enabled){ // stop - recording
             mic.start();
             numAvaliacoes = 0;
-            avaliacao = 0.0;
             recState = 1;
         }else{ //recording - stop
             mic.stop();
@@ -63,9 +63,11 @@ function avaliar() {
             sflag = 1;
         }else{
             sflag = 0;
+            pontos++;
         }
         numframe = 0;
         silencio = 0;
+        numAvaliacoes++;
     }
 
     if(sflag==0){
@@ -85,8 +87,7 @@ function avaliar() {
 
 function mostrarAvaliacao(){
     background(200);
-    console.log("acabou");
-    text("acabou",300,500);
+    document.write(pontos/numAvaliacoes);
     recState = 2;
 }
 
