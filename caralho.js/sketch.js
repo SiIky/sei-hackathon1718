@@ -1,44 +1,57 @@
 var mic, fft, sound, lastspectrum, med = 0.0, M;
-var flag = 0, i;
+var flag = 0, recState = 1;
 var numframe = 0, silencio = 0, sflag = 0;
 
-function preload() {
-    sound = new loadSound("~/Desktop/caralho.js/assets/contacts3seg.wav");
-}
+var maximaAmplitude = 17, intervaloFrames = 30;
+
+var avaliacao = 0.0; // 0-100
+var numAvaliacoes = 0;
 
 function setup() {
-   
+
    createCanvas(1000,400);
    noFill();
 
-   //mic = new p5.AudioIn();
-   //mic.start();
+   mic = new p5.AudioIn();
+   mic.start();
    fft = new p5.FFT();
-   fft.setInput(sound);
-   
+   fft.setInput(mic);
 }
 
-function draw() {
-   
+function keyPressed(){
+    if(recState === 0 && mic.enabled){ // stop - recording
+        mic.start();
+        numAvaliacoes = 0;
+        avaliacao = 0.0;
+        recState = 1;
+    }else if(recState === 1){ //recording - stop
+        mic.stop();
+
+        recState = 0;
+    }
+}
+
+function avaliar() {
+
    var spectrum = fft.analyze();
-   
+
    if(flag === 0){
        lastspectrum = spectrum;
        flag++;
    }
-   
+
    M = 0;
    for (i = 0; i<spectrum.length; i++) {
         var diff = abs(spectrum[i]-lastspectrum[i]);
         if(M < diff){
-            M = diff;  
+            M = diff;
         }
    }
-   if(M<20){
+   if(M<maximaAmplitude){
        silencio++;
    }
-   
-   if(numframe==10){
+
+   if(numframe==intervaloFrames){
        if(numframe-silencio <= silencio){
             sflag = 1;
        }else{
@@ -47,13 +60,13 @@ function draw() {
        numframe = 0;
        silencio = 0;
    }
-   
+
    if(sflag==0){
-       background(400);
+       background(0,255,0);
    }else{
-       background(200);
+       background(255,0,0);
    }
-    
+
    beginShape();
    for (i = 0; i<spectrum.length; i++) {
     vertex(i, map(abs(spectrum[i]-lastspectrum[i]), 0, 255, 400, 0) );
@@ -61,4 +74,17 @@ function draw() {
    endShape();
    lastspectrum = spectrum;
    numframe++;
+}
+
+function mostrarAvaliacao(){
+    background(200);
+    text("acabou",20,20);
+}
+
+function draw(){
+    if(recState === 1){
+        avaliar();
+    }else{
+        mostrarAvaliacao();
+    }
 }
