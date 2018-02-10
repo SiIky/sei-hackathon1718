@@ -1,21 +1,24 @@
-var mic, fft, sound, lastspectrum, med = 0.0, M;
+var mic, fft, sound, lastspectrum, M;
 var flag = 0, i;
 var numframe = 0, silencio = 0, sflag = 0;
 
 function preload() {
-    sound = new loadSound("~/Desktop/caralho.js/assets/contacts3seg.wav");
+    sound = loadSound("assets/Talk_rui.wav");
 }
 
+console.log(window);
+
 function setup() {
-   
    createCanvas(1000,400);
    noFill();
 
    //mic = new p5.AudioIn();
    //mic.start();
+
+    sound.loop();
+
    fft = new p5.FFT();
    fft.setInput(sound);
-   
 }
 
 function draw() {
