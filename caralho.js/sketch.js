@@ -1,12 +1,15 @@
 var mic, fft, sound, lastspectrum, M;
 var flag = 0,
-  recState = -1;
+  recording = false,
+  finished = false;
 var numframe = 0,
   silencio = 0,
   sflag = 0;
+var inputMax = document.getElementById("max");
 
 var maximaAmplitude = 17,
   intervaloFrames = 30;
+inputMax.value = maximaAmplitude;
 
 var pontos = 0; // 0-100
 var numAvaliacoes = 0;
@@ -23,14 +26,32 @@ function handleFileButton() {
     inputValue = input.value;
     //render sound
     state = "file";
-    sound = loadSound(input.value, onLoadSuccess, onLoadFailure, whileLoading);
+    sound = loadSound(
+      "assets/" + input.value,
+      onLoadSuccess,
+      onLoadFailure,
+      whileLoading
+    );
   }
 }
 
 function onLoadSuccess() {
   console.log("success");
-  sound.loop();
+  sound.play();
+  sound.onended(onInputStop);
   beginRender(sound);
+}
+
+function onInputStop() {
+  console.log("ended");
+  if (state === "mic") {
+    mic.stop();
+  } else if (sound.isPlaying()) {
+    //sound.stop();
+  }
+
+  recording = false;
+  finished = true;
 }
 
 function onLoadFailure() {
@@ -51,9 +72,10 @@ function handleMicButton() {
 }
 
 function beginRender(soundInput) {
+  maximaAmplitude = inputMax.value;
   fft = new p5.FFT();
   fft.setInput(soundInput);
-  recState = 1;
+  recording = true;
 }
 
 function setup() {
@@ -62,22 +84,19 @@ function setup() {
 }
 
 function keyPressed() {
-  if (keyCode === 32) {
-    if ((recState === 0 || recState === 2) && mic.enabled) {
-      // stop - recording
-        mic.start();
-        numAvaliacoes = 0;
-        pontos = 0;
-        recState = 1;
-    } else {
-      //recording - stop
+  const SPACE = 32;
+  if (keyCode === SPACE) {
+    if (!recording && mic.enabled) {
+      // stop -> recording
       if (state === "mic") {
-        mic.stop();
-      } else {
-        sound.stop();
+        mic.start();
       }
-        
-      recState = 0;
+      numAvaliacoes = 0;
+      pontos = 0;
+      recording = true;
+    } else {
+      //recording -> stop
+      onInputStop();
     }
   }
 }
@@ -131,15 +150,16 @@ function avaliar() {
 function mostrarAvaliacao() {
   background(200);
   //document.write(pontos/numAvaliacoes);
-  console.log("acabou", pontos/numAvaliacoes);
-
-  recState = 2;
+  document.getElementById("score").innerHTML =
+    "Score: " + pontos / numAvaliacoes;
+  console.log("acabou", pontos / numAvaliacoes);
+  finished = false;
 }
 
 function draw() {
-  if (recState === 1) {
+  if (recording) {
     avaliar();
-  } else if (recState === 0) {
+  } else if (!recording && finished) {
     mostrarAvaliacao();
   } else {
     //Nada selecionado
