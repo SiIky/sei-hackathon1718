@@ -25,8 +25,6 @@ var downloadSound;
 
 var readyToAnalysis = false;
 
-var scoreHistory = [];
-
 document.getElementById("showFile").addEventListener("click", handleFileButton);
 document.getElementById("showMic").addEventListener("click", handleMicButton);
 document
@@ -80,21 +78,27 @@ function onStartAnalysisClick() {
     beginRender(mic);
   } else {
     sound.play();
-    sound.onended(onStopAnalysisClick);
+    sound.onended(naturalEnding);
     beginRender(sound);
   }
 }
 
+function naturalEnding() {
+  if (!recording) return;
+  recording = false;
+  finished = true;
+  mostrarAvaliacao();
+}
+
 function onStopAnalysisClick() {
-  console.log("ended");
+  recording = false;
+  finished = true;
   if (state === "mic") {
     mic.stop();
     recorder.stop();
   } else {
-    sound.pause();
+    sound.stop();
   }
-  recording = false;
-  finished = true;
   mostrarAvaliacao();
 }
 
@@ -176,13 +180,16 @@ function avaliar() {
 }
 
 function mostrarAvaliacao() {
-  background(200);
+  background(247);
   let message;
   const date = new Date().toLocaleString();
   const quantitativeScore = pontos / numAvaliacoes;
+  if (isNaN(quantitativeScore)) {
+    return;
+  }
   let qualitativeScore;
   if (quantitativeScore === 1) {
-    qualitativeScore = "Excelent!";
+    qualitativeScore = "Perfect!";
   } else if (quantitativeScore > 0.8) {
     qualitativeScore = "Very good!";
   } else if (quantitativeScore > 0.6) {
@@ -222,7 +229,7 @@ function draw() {
     document.getElementById("stopAnalysis").style.visibility = "hidden";
   }
 
-  if (finished) {
+  if (finished && state === "mic") {
     downloadButton.style.visibility = "visible";
   } else if (!finished) {
     downloadButton.style.visibility = "hidden";
