@@ -23,11 +23,19 @@ var downloadButton = document.getElementById("downloadButton");
 var recorder;
 var downloadSound;
 
+var readyToAnalysis = false;
+
 document.getElementById("showFile").addEventListener("click", handleFileButton);
 document.getElementById("showMic").addEventListener("click", handleMicButton);
 document
   .getElementById("downloadButton")
   .addEventListener("click", onDownloadButtonClick);
+document
+  .getElementById("startAnalysis")
+  .addEventListener("click", onStartAnalysisClick);
+document
+  .getElementById("stopAnalysis")
+  .addEventListener("click", onStopAnalysisClick);
 
 function handleFileButton() {
   if (state === "mic" || input.value !== inputValue) {
@@ -43,26 +51,46 @@ function handleFileButton() {
   }
 }
 
+function handleMicButton() {
+  if (state === "file") {
+    state = "mic";
+    mic.start();
+    readyToAnalysis = true;
+  }
+}
+
 function onDownloadButtonClick() {
   save(downloadSound, "mySound.wav");
 }
 
 function onLoadSuccess() {
   console.log("success");
-  sound.play();
-  sound.onended(onInputStop);
-  beginRender(sound);
+  readyToAnalysis = true;
 }
 
-function onInputStop() {
+function onStartAnalysisClick() {
+  numAvaliacoes = 0;
+  pontos = 0;
+  recording = true;
+  finished = false;
+  if (state === "mic") {
+    micSetUp();
+    beginRender(mic);
+  } else {
+    sound.play();
+    sound.onended(onStopAnalysisClick);
+    beginRender(sound);
+  }
+}
+
+function onStopAnalysisClick() {
   console.log("ended");
   if (state === "mic") {
     mic.stop();
     recorder.stop();
-  } else if (sound.isPlaying()) {
-    //sound.stop();
+  } else {
+    sound.pause();
   }
-
   recording = false;
   finished = true;
   mostrarAvaliacao();
@@ -74,14 +102,6 @@ function onLoadFailure() {
 
 function whileLoading(percentage) {
   console.log("loading... ", percentage);
-}
-
-function handleMicButton() {
-  if (state === "file") {
-    state = "mic";
-    micSetUp();
-    beginRender(mic);
-  }
 }
 
 function micSetUp() {
@@ -105,25 +125,6 @@ function setup() {
   noFill();
   mic = new p5.AudioIn();
   mic.start();
-}
-
-function keyPressed() {
-  const SPACE = 32;
-  if (keyCode === SPACE) {
-    if (!recording && mic.enabled) {
-      // stop -> recording
-      if (state === "mic") {
-        micSetUp();
-      }
-      numAvaliacoes = 0;
-      pontos = 0;
-      recording = true;
-      finished = false;
-    } else {
-      //recording -> stop
-      onInputStop();
-    }
-  }
 }
 
 function startNewAvaliation() {
@@ -188,9 +189,22 @@ function mostrarAvaliacao() {
 }
 
 function draw() {
+  if (readyToAnalysis) {
+    if (!recording) {
+      document.getElementById("startAnalysis").style.visibility = "visible";
+      document.getElementById("stopAnalysis").style.visibility = "hidden";
+    } else {
+      document.getElementById("startAnalysis").style.visibility = "hidden";
+      document.getElementById("stopAnalysis").style.visibility = "visible";
+    }
+  } else {
+    document.getElementById("startAnalysis").style.visibility = "hidden";
+    document.getElementById("stopAnalysis").style.visibility = "hidden";
+  }
+
   if (finished) {
     downloadButton.style.visibility = "visible";
-  } else {
+  } else if (!finished) {
     downloadButton.style.visibility = "hidden";
   }
   if (recording) {
