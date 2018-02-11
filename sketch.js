@@ -179,11 +179,27 @@ function mostrarAvaliacao() {
   background(200);
   let message;
   const date = new Date().toLocaleString();
+  const quantitativeScore = pontos / numAvaliacoes;
+  let qualitativeScore;
+  if (quantitativeScore === 1) {
+    qualitativeScore = "Excelent!";
+  } else if (quantitativeScore > 0.8) {
+    qualitativeScore = "Very good!";
+  } else if (quantitativeScore > 0.6) {
+    qualitativeScore = "Good.";
+  } else if (quantitativeScore > 0.4) {
+    qualitativeScore = "Nice try.";
+  } else if (quantitativeScore > 0.2) {
+    qualitativeScore = "Keep practicing.";
+  } else {
+    qualitativeScore = "At least your mother loves you.";
+  }
   if (state === "file") {
     message = `[${date}] Tested File ${input.value}; Score: ${pontos /
-      numAvaliacoes}`;
+      numAvaliacoes}. ${qualitativeScore}`;
   } else {
-    message = `[${date}] Mic test; Score: ${pontos / numAvaliacoes}`;
+    message = `[${date}] Mic test; Score: ${pontos /
+      numAvaliacoes}. ${qualitativeScore}`;
   }
   //scoreHistory = [message, ...scoreHistory];
   const ul = document.getElementById("scoreList");
