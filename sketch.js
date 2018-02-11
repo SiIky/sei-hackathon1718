@@ -18,8 +18,16 @@ var state = "file";
 var inputValue = "";
 var input = document.getElementById("fileInput");
 
+var downloadButton = document.getElementById("downloadButton");
+
+var recorder;
+var downloadSound;
+
 document.getElementById("showFile").addEventListener("click", handleFileButton);
 document.getElementById("showMic").addEventListener("click", handleMicButton);
+document
+  .getElementById("downloadButton")
+  .addEventListener("click", onDownloadButtonClick);
 
 function handleFileButton() {
   if (state === "mic" || input.value !== inputValue) {
@@ -35,6 +43,10 @@ function handleFileButton() {
   }
 }
 
+function onDownloadButtonClick() {
+  save(downloadSound, "mySound.wav");
+}
+
 function onLoadSuccess() {
   console.log("success");
   sound.play();
@@ -46,12 +58,14 @@ function onInputStop() {
   console.log("ended");
   if (state === "mic") {
     mic.stop();
+    recorder.stop();
   } else if (sound.isPlaying()) {
     //sound.stop();
   }
 
   recording = false;
   finished = true;
+  mostrarAvaliacao();
 }
 
 function onLoadFailure() {
@@ -65,8 +79,7 @@ function whileLoading(percentage) {
 function handleMicButton() {
   if (state === "file") {
     state = "mic";
-    mic = new p5.AudioIn();
-    mic.start();
+    recorder.record(downloadSound);
     beginRender(mic);
   }
 }
@@ -81,6 +94,11 @@ function beginRender(soundInput) {
 function setup() {
   createCanvas(1000, 400);
   noFill();
+  mic = new p5.AudioIn();
+  mic.start();
+  recorder = new p5.SoundRecorder();
+  recorder.setInput(mic);
+  downloadSound = new p5.SoundFile();
 }
 
 function keyPressed() {
@@ -94,6 +112,7 @@ function keyPressed() {
       numAvaliacoes = 0;
       pontos = 0;
       recording = true;
+      finished = false;
     } else {
       //recording -> stop
       onInputStop();
@@ -153,14 +172,16 @@ function mostrarAvaliacao() {
   document.getElementById("score").innerHTML =
     "Score: " + pontos / numAvaliacoes;
   console.log("acabou", pontos / numAvaliacoes);
-  finished = false;
 }
 
 function draw() {
+  if (finished) {
+    downloadButton.style.visibility = "visible";
+  } else {
+    downloadButton.style.visibility = "hidden";
+  }
   if (recording) {
     avaliar();
-  } else if (!recording && finished) {
-    mostrarAvaliacao();
   } else {
     //Nada selecionado
   }
