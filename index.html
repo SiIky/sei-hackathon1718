@@ -23,14 +23,32 @@
 </head>
 
 <body>
-  <input id="max" />
-  <input id="fileInput" />
-  <button id="showFile">File Analysis</button>
-  <button id="showMic">Microphone Analysis</button>
-  <button id="startAnalysis">Start new analysis</button>
-  <button id="stopAnalysis">Stop</button>
-  <button id="downloadButton">Download</button>
-  <div id="score"></div>
+  <div>
+    <label>Max threshold</label>
+    <input id="maxInput" />
+  </div>
+  <hr/>
+
+  <div>
+    <label for="fileInput">File</label>
+    <input id="fileInput" />
+    <button id="showFile">File Analysis</button>
+  </div>
+  <hr/>
+
+  <div>
+    <button id="showMic">Microphone Analysis</button>
+  </div>
+  <hr/>
+  <div>
+
+    <button id="startAnalysis">Start new analysis</button>
+    <button id="stopAnalysis">Stop</button>
+    <button id="downloadButton">Download</button>
+    <div id="score">
+      <ul id="scoreList"></ul>
+    </div>
+  </div>
   <script src="sketch.js" type="text/javascript"></script>
 
 </body>

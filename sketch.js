@@ -5,7 +5,7 @@ var flag = 0,
 var numframe = 0,
   silencio = 0,
   sflag = 0;
-var inputMax = document.getElementById("max");
+var inputMax = document.getElementById("maxInput");
 
 var maximaAmplitude = 17,
   intervaloFrames = 30;
@@ -24,6 +24,8 @@ var recorder;
 var downloadSound;
 
 var readyToAnalysis = false;
+
+var scoreHistory = [];
 
 document.getElementById("showFile").addEventListener("click", handleFileButton);
 document.getElementById("showMic").addEventListener("click", handleMicButton);
@@ -127,13 +129,6 @@ function setup() {
   mic.start();
 }
 
-function startNewAvaliation() {
-  numAvaliacoes = 0;
-  pontos = 0;
-  recording = true;
-  finished = false;
-}
-
 function avaliar() {
   var spectrum = fft.analyze();
 
@@ -182,10 +177,19 @@ function avaliar() {
 
 function mostrarAvaliacao() {
   background(200);
-  //document.write(pontos/numAvaliacoes);
-  document.getElementById("score").innerHTML =
-    "Score: " + pontos / numAvaliacoes;
-  console.log("acabou", pontos / numAvaliacoes);
+  let message;
+  const date = new Date().toLocaleString();
+  if (state === "file") {
+    message = `[${date}] Tested File ${input.value}; Score: ${pontos /
+      numAvaliacoes}`;
+  } else {
+    message = `[${date}] Mic test; Score: ${pontos / numAvaliacoes}`;
+  }
+  //scoreHistory = [message, ...scoreHistory];
+  const ul = document.getElementById("scoreList");
+  let li = document.createElement("li");
+  li.innerHTML = message;
+  ul.appendChild(li);
 }
 
 function draw() {
