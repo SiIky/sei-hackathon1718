@@ -37,6 +37,8 @@ document
   .getElementById("stopAnalysis")
   .addEventListener("click", onStopAnalysisClick);
 
+var timerRef, time;
+
 function handleFileButton() {
   if (state === "mic" || input.value !== inputValue) {
     inputValue = input.value;
@@ -68,11 +70,18 @@ function onLoadSuccess() {
   readyToAnalysis = true;
 }
 
+function timer() {
+  time++;
+  timerRef = setTimeout(timer, 1000);
+}
+
 function onStartAnalysisClick() {
   numAvaliacoes = 0;
   pontos = 0;
   recording = true;
   finished = false;
+  time = 0;
+  timerRef = setTimeout(timer, 1000);
   if (state === "mic") {
     micSetUp();
     beginRender(mic);
@@ -85,12 +94,14 @@ function onStartAnalysisClick() {
 
 function naturalEnding() {
   if (!recording) return;
+  clearTimeout(timerRef);
   recording = false;
   finished = true;
   mostrarAvaliacao();
 }
 
 function onStopAnalysisClick() {
+  clearTimeout(timerRef);
   recording = false;
   finished = true;
   if (state === "mic") {
@@ -183,7 +194,7 @@ function mostrarAvaliacao() {
   background(247);
   let message;
   const date = new Date().toLocaleString();
-  const quantitativeScore = pontos / numAvaliacoes;
+  const quantitativeScore = (pontos / numAvaliacoes).toFixed(3);
   if (isNaN(quantitativeScore)) {
     return;
   }
@@ -202,11 +213,11 @@ function mostrarAvaliacao() {
     qualitativeScore = "At least your mother loves you.";
   }
   if (state === "file") {
-    message = `[${date}] Tested File ${input.value}; Score: ${pontos /
-      numAvaliacoes}. ${qualitativeScore}`;
+    message = `[${date}] Tested File ${
+      input.value
+    }; Score: ${quantitativeScore}. ${qualitativeScore}`;
   } else {
-    message = `[${date}] Mic test; Score: ${pontos /
-      numAvaliacoes}. ${qualitativeScore}`;
+    message = `[${date}] Mic test, duration ${time} seconds; Score: ${quantitativeScore}. ${qualitativeScore}`;
   }
   //scoreHistory = [message, ...scoreHistory];
   const ul = document.getElementById("scoreList");
@@ -235,6 +246,7 @@ function draw() {
     downloadButton.style.visibility = "hidden";
   }
   if (recording) {
+    document.getElementById("timer").innerHTML = `Time: ${time} seconds`;
     avaliar();
   } else {
     //Nada selecionado
