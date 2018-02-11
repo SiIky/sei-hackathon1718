@@ -79,9 +79,17 @@ function whileLoading(percentage) {
 function handleMicButton() {
   if (state === "file") {
     state = "mic";
-    recorder.record(downloadSound);
+    micSetUp();
     beginRender(mic);
   }
+}
+
+function micSetUp() {
+  mic.start();
+  recorder = new p5.SoundRecorder();
+  recorder.setInput(mic);
+  downloadSound = new p5.SoundFile();
+  recorder.record(downloadSound);
 }
 
 function beginRender(soundInput) {
@@ -89,6 +97,7 @@ function beginRender(soundInput) {
   fft = new p5.FFT();
   fft.setInput(soundInput);
   recording = true;
+  finished = false;
 }
 
 function setup() {
@@ -96,9 +105,6 @@ function setup() {
   noFill();
   mic = new p5.AudioIn();
   mic.start();
-  recorder = new p5.SoundRecorder();
-  recorder.setInput(mic);
-  downloadSound = new p5.SoundFile();
 }
 
 function keyPressed() {
@@ -107,7 +113,7 @@ function keyPressed() {
     if (!recording && mic.enabled) {
       // stop -> recording
       if (state === "mic") {
-        mic.start();
+        micSetUp();
       }
       numAvaliacoes = 0;
       pontos = 0;
@@ -118,6 +124,13 @@ function keyPressed() {
       onInputStop();
     }
   }
+}
+
+function startNewAvaliation() {
+  numAvaliacoes = 0;
+  pontos = 0;
+  recording = true;
+  finished = false;
 }
 
 function avaliar() {
